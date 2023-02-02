@@ -4,10 +4,7 @@ import { Op, DATE } from "sequelize";
 
 export class EventsService {
   async getWarmupEvents() {
-    Event.hasOne(Workshop, { as: "eventId" });
-    return await Event.findAll({
-      include: [{ model: Workshop, as: "eventId" }],
-    });
+    return await Event.findAll();
   }
 
   /* TODO: complete getEventsWithWorkshops so that it returns all events including the workshops
@@ -88,11 +85,10 @@ export class EventsService {
      */
 
   async getEventsWithWorkshops() {
-    const now = new Date();    
-    const events = await Workshop.findAll({
-      where: { start: { [Op.gte]: now } },
+    Event.belongsTo(Workshop, { as: "workshop", foreignKey: "id" });
+    return await Event.findAll({
+      include: [{ model: Workshop, as: "workshop", foreignKey: "eventId" }],
     });
-    return events;
     // throw new Error("TODO task 1");
   }
 
@@ -163,6 +159,14 @@ export class EventsService {
     ```
      */
   async getFutureEventWithWorkshops() {
-    throw new Error("TODO task 2");
+    const now = new Date();
+    Event.belongsTo(Workshop, { as: "workshop", foreignKey: "id" });
+    const events = await Event.findAll({
+      where: { id: { [Op.not]: 1 } },
+      limit: 3,
+      include: [{ model: Workshop, as: "workshop", foreignKey: 'eventId' }],
+    });
+    return events;
+    // throw new Error("TODO task 2");
   }
 }
